@@ -39,7 +39,7 @@ public class WordCountMapper extends Mapper<Object, Text, Text, IntWritable> {
 		final List<String> result = new LinkedList<String>();
 
 		// remove HTML tags, dots and commas
-		text = text.replaceAll("<.*?>", "").replaceAll("[.]", "").replaceAll(",", "");
+		text = text.replaceAll("<.*?>", " ").replaceAll("[.,]", " ");
 
 		TokenStream tokenStream = null;
 		try {
