@@ -18,7 +18,8 @@ public class WordCountTest {
 	private static final String text =
 			"<h2>Cíle lingvistiky</h2> <li> Deskriptivní lingvistika. Cílem deskriptivní lingvistiky je popsat jazykový systém" +
 			"(např. výraz \"hladový vlk\" odkazuje k objektu, který je \"hladový\" a který je \"vlk\")" +
-			"Bohuslav Hála v článku \"Význam experimentálně-fonetického zkoumání nářečí\" in \"Listy filologické\", 1940.</ref>)";
+			"Bohuslav Hála v článku \"Význam experimentálně-fonetického zkoumání nářečí\" in \"Listy filologické\", 1940.</ref>)" +
+			"x1 + A2a * b_8 =100";
 
 	private static final List<String> textProcessed = Arrays.asList(
 			"cíl", "lingvistik", "deskriptivn", "lingvistik", "cíl",  "deskriptivn", "lingvistik", "pops", "jazyk", "syst",

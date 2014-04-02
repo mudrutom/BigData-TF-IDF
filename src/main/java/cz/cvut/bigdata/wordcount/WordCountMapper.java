@@ -38,8 +38,8 @@ public class WordCountMapper extends Mapper<Object, Text, Text, IntWritable> {
 	protected List<String> parseTerms(String text) throws IOException {
 		final List<String> result = new LinkedList<String>();
 
-		// remove HTML tags, dots and commas
-		text = text.replaceAll("<.*?>", " ").replaceAll("[.,]", " ");
+		// remove HTML tags and other special chars
+		text = text.replaceAll("<(.*?)>", " ").replaceAll("[.,:;_]", " ");
 
 		TokenStream tokenStream = null;
 		try {
@@ -53,7 +53,7 @@ public class WordCountMapper extends Mapper<Object, Text, Text, IntWritable> {
 			while (tokenStream.incrementToken()) {
 				String term = termAttribute.toString();
 				// exclude single characters and numbers
-				if (term.length() > 1 && !term.matches("^\\d*$")) {
+				if (term.length() > 1 && !term.matches("^(.*?)[0-9](.*?)$")) {
 					result.add(term);
 				}
 			}

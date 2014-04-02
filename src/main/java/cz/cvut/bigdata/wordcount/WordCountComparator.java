@@ -17,6 +17,6 @@ public class WordCountComparator extends WritableComparator {
 	@SuppressWarnings("unchecked")
 	public int compare(WritableComparable a, WritableComparable b) {
 		// Here we exploit the implementation of compareTo(...) in Text.class.
-		return -a.compareTo(b);
+		return a.compareTo(b);
 	}
 }
