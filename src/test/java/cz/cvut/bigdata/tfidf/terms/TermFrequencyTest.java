@@ -1,4 +1,4 @@
-package cz.cvut.bigdata.wordcount;
+package cz.cvut.bigdata.tfidf.terms;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,7 +13,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
-public class WordCountTest {
+public class TermFrequencyTest {
 
 	private static final String text =
 			"<h2>Cíle lingvistiky</h2> <li> Deskriptivní lingvistika. Cílem deskriptivní lingvistiky je popsat jazykový systém" +
@@ -27,11 +27,11 @@ public class WordCountTest {
 			"bohuslav", "hál", "význam", "experimentáln", "fonetick", "zkoumán", "nářek", "in", "list", "filologick"
 		);
 
-	private WordCountMapper mapper;
+	private TermFrequencyMapper mapper;
 
 	@Before
 	public void setup() {
-		mapper = new WordCountMapper();
+		mapper = new TermFrequencyMapper();
 	}
 
 	@After
@@ -40,7 +40,7 @@ public class WordCountTest {
 	}
 
 	@Test
-	public void testMapper() throws IOException {
+	public void testTermParsing() throws IOException {
 		final List<String> result = mapper.parseTerms(text);
 		assertEquals(textProcessed, result);
 	}

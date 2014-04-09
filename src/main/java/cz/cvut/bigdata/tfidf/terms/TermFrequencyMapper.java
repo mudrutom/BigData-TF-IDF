@@ -1,5 +1,6 @@
-package cz.cvut.bigdata.wordcount;
+package cz.cvut.bigdata.tfidf.terms;
 
+import cz.cvut.bigdata.tfidf.TermDocWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -13,28 +14,30 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Receives (byteOffsetOfLine, textOfLine), note we do not
- * care about the type of the key because we do not use it
- * anyway, and emits (word, 1) for each occurrence of the
- * word in the line of text (i.e. the received value).
+ * Receives <b>(line, 'text')</b> corresponding to the line
+ * number and the document content. The mapper then parses
+ * the text to get terms, using <i>Apache Lucene</i> analyzer,
+ * then it will emit <b>(termDoc, 1)</b> pair for each term.
  */
-public class WordCountMapper extends Mapper<Object, Text, Text, IntWritable> {
+public class TermFrequencyMapper extends Mapper<Text, Text, TermDocWritable, IntWritable> {
 
 	// Lucene Czech analyzer:
 	//  standard filter > lower case filter > stop filter > czech stem filter
 	private final CzechAnalyzer analyzer = new CzechAnalyzer(Version.LUCENE_47);
 
-	private final IntWritable ONE = new IntWritable(1);
-	private final Text word = new Text();
+	private final TermDocWritable termDoc = new TermDocWritable();
+	private final IntWritable one = new IntWritable(1);
 
 	@Override
-	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+	public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
 		for (String term : parseTerms(value.toString())) {
-			word.set(term);
-			context.write(word, ONE);
+			// emit (termDoc, 1) pair
+			termDoc.set(term, Integer.valueOf(key.toString()));
+			context.write(termDoc, one);
 		}
 	}
 
+	/** Parsing of terms from the document using Lucene. */
 	protected List<String> parseTerms(String text) throws IOException {
 		final List<String> result = new LinkedList<String>();
 
