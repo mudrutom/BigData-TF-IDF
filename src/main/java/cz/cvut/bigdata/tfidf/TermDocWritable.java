@@ -1,7 +1,7 @@
 package cz.cvut.bigdata.tfidf;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.WritableUtils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,15 +38,23 @@ public class TermDocWritable implements WritableComparable<TermDocWritable> {
 		this.document = document;
 	}
 
+	public TermDocWritable parse(String text) {
+		final String[] parts = StringUtils.split(text, " : ");
+		if (parts == null || parts.length < 2) throw new IllegalArgumentException();
+		term = parts[0];
+		document = Integer.parseInt(parts[1]);
+		return this;
+	}
+
 	@Override
 	public void write(DataOutput out) throws IOException {
-		WritableUtils.writeString(out, term);
+		out.writeUTF(term);
 		out.writeInt(document);
 	}
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		term = WritableUtils.readString(in);
+		term = in.readUTF();
 		document = in.readInt();
 	}
 
@@ -54,25 +62,25 @@ public class TermDocWritable implements WritableComparable<TermDocWritable> {
 	public int compareTo(TermDocWritable o) {
 		if (o == null) return -1;
 		final int val = (term == null) ? 0 : term.compareTo(o.term);
-		return (val != 0) ? val : (document < o.document) ? -1 : 1;
+		return (val != 0) ? val : ((document < o.document) ? -1 : ((document == o.document) ? 0 : 1));
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (!(o instanceof TermDocWritable)) return false;
 
 		final TermDocWritable that = (TermDocWritable) o;
-		return document == that.document && term.equals(that.term);
+		return document == that.document && ((term != null) ? term.equals(that.term) : that.term == null);
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * term.hashCode() + document;
+		return 31 * ((term != null) ? term.hashCode() : 0) + document;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s : %d", term, document);
+		return String.format("%s : %d", (term != null) ? term : "", document);
 	}
 }

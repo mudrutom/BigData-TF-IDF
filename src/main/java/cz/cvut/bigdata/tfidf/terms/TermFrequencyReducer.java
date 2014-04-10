@@ -11,7 +11,7 @@ import java.io.IOException;
  * Receives <b>(termDoc, list[1,1,...,1])</b> where the numbers
  * corresponds to the number of times the term occurred in the
  * document. The reducer simply emits the sum of those numbers,
- * i.e. the term document frequency.
+ * i.e. the term document frequency, if it is greater than 1.
  */
 public class TermFrequencyReducer extends Reducer<TermDocWritable, IntWritable, Text, IntWritable> {
 
@@ -26,9 +26,11 @@ public class TermFrequencyReducer extends Reducer<TermDocWritable, IntWritable, 
 			sum += value.get();
 		}
 
-		// emit term document frequency
-		termDoc.set(key.toString());
-		frequency.set(sum);
-		context.write(termDoc, frequency);
+		if (sum > 1) {
+			// emit term document frequency
+			termDoc.set(key.toString());
+			frequency.set(sum);
+			context.write(termDoc, frequency);
+		}
 	}
 }

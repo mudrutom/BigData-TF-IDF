@@ -32,7 +32,7 @@ public class TermFrequencyMapper extends Mapper<Text, Text, TermDocWritable, Int
 	public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
 		for (String term : parseTerms(value.toString())) {
 			// emit (termDoc, 1) pair
-			termDoc.set(term, Integer.valueOf(key.toString()));
+			termDoc.set(term, Integer.parseInt(key.toString()));
 			context.write(termDoc, one);
 		}
 	}
@@ -42,7 +42,7 @@ public class TermFrequencyMapper extends Mapper<Text, Text, TermDocWritable, Int
 		final List<String> result = new LinkedList<String>();
 
 		// remove HTML tags and other special chars
-		text = text.replaceAll("<(.*?)>", " ").replaceAll("[.,:;_]", " ");
+		text = text.replaceAll("<(.*?)>", " ").replaceAll("[.,!?:;_'\"]", " ");
 
 		TokenStream tokenStream = null;
 		try {

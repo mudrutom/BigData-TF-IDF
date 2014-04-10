@@ -102,7 +102,7 @@ public class Main extends Configured implements Tool {
 		job.setJarByClass(TermFrequencyMapper.class);
 		job.setMapperClass(TermFrequencyMapper.class);
 		job.setReducerClass(TermFrequencyReducer.class);
-		job.setCombinerClass(TermFrequencyReducer.class);
+		//job.setCombinerClass(TermFrequencyReducer.class);
 		job.setPartitionerClass(HashPartitioner.class);
 
 		// set the key-value classes
