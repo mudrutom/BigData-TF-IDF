@@ -12,8 +12,9 @@ import java.io.IOException;
  * of the text or a negative number indicating the line number offsets.
  * <p/>
  * First, when the offset are received, the values (converted to int) are
- * summed-up into the line counter. Otherwise, the mapper emits the final
- * result, each time incrementing the line counter.
+ * summed-up into the line counter. The zero key value indicates the overall
+ * number of lines, processed by the mappers. Otherwise, the mapper emits
+ * the final result, each time incrementing the line counter.
  */
 public class LineNumberReducer extends Reducer<LongWritable, Text, IntWritable, Text> {
 
@@ -23,7 +24,7 @@ public class LineNumberReducer extends Reducer<LongWritable, Text, IntWritable, 
 
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
-		lineCounter = 0;
+		lineCounter = 1;
 	}
 
 	@Override
@@ -31,8 +32,17 @@ public class LineNumberReducer extends Reducer<LongWritable, Text, IntWritable, 
 		if (key.get() < 0L) {
 			// setup the line number offset for this reducer
 			for (Text text : values) {
-				lineCounter += Integer.valueOf(text.toString());
+				lineCounter += Integer.parseInt(text.toString());
 			}
+			return;
+		} else if (key.get() == 0L) {
+			// zero key value indicates the overall number of lines
+			int numberOfLines = 0;
+			for (Text text : values) {
+				numberOfLines += Integer.parseInt(text.toString());
+			}
+			line.set(0);
+			context.write(line, new Text(String.valueOf(numberOfLines)));
 			return;
 		}
 

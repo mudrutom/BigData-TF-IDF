@@ -13,7 +13,8 @@ import java.util.Arrays;
  * Performs identity function while counting number of lines for each
  * reducer, according to the LineNumberPartitioner partitioning. When
  * finished, a cumulative sum of line counters is sent to a particular
- * reducer, using special message with negative key value.
+ * reducer, using special message with negative key value. Then it emit
+ * the final cumulative sum using the zero key value.
  */
 public class LineNumberMapper extends Mapper<LongWritable, Text, LongWritable, Text> {
 
@@ -32,6 +33,10 @@ public class LineNumberMapper extends Mapper<LongWritable, Text, LongWritable, T
 
 	@Override
 	protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+		if (key.get() == 0L) {
+			// skip the first line
+			return;
+		}
 		context.write(key, value);
 
 		// increment line counter of the responsible reducer
@@ -54,5 +59,9 @@ public class LineNumberMapper extends Mapper<LongWritable, Text, LongWritable, T
 			// compute cumulative sum
 			cumSum += lineCounters[i];
 		}
+
+		// send the overall number of lines
+		count.set(String.valueOf(cumSum));
+		context.write(new LongWritable(0L), count);
 	}
 }

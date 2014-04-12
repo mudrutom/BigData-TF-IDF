@@ -18,6 +18,8 @@ import java.util.List;
  * number and the document content. The mapper then parses
  * the text to get terms, using <i>Apache Lucene</i> analyzer,
  * then it will emit <b>(termDoc, 1)</b> pair for each term.
+ * Wen the zero key value, indicating the number of lines, is
+ * received then the mapper emits the special ('_', 0) pair.
  */
 public class TermFrequencyMapper extends Mapper<Text, Text, TermDocWritable, IntWritable> {
 
@@ -30,9 +32,17 @@ public class TermFrequencyMapper extends Mapper<Text, Text, TermDocWritable, Int
 
 	@Override
 	public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+		final int line = Integer.parseInt(key.toString());
+		if (line == 0) {
+			// line zero contains the number of documents, emit ('_', 0) pair
+			termDoc.set("_", 0);
+			context.write(termDoc, new IntWritable(Integer.parseInt(value.toString())));
+			return;
+		}
+
 		for (String term : parseTerms(value.toString())) {
 			// emit (termDoc, 1) pair
-			termDoc.set(term, Integer.parseInt(key.toString()));
+			termDoc.set(term, line);
 			context.write(termDoc, one);
 		}
 	}
