@@ -1,7 +1,6 @@
 package cz.cvut.bigdata.tfidf.docs;
 
 import cz.cvut.bigdata.tfidf.TermDocFreqWritable;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -15,18 +14,19 @@ import java.util.LinkedList;
  * First, the reducer will receive a pair with the key value
  * starting '_', that indicate the overall number of documents.
  * Then, the reducer will compute the TF-IDF score for each
- * term-document from the received list.
+ * term-document from the received list. It filters out terms
+ * occurring less then 3 times or more than N/2 times. Finally,
+ * it emits the TF-IDF matrix in sparse representation.
  * <p/>
  * The TF-IDF is computed as follows:
  * <pre>
- *     tfidf = tf * log(idf)
+ *     tfidf = log(tf + 1) * log(idf)
  *     idf = N / df
  * </pre>
  */
-public class InverseDocFrequencyReducer extends Reducer<Text, TermDocFreqWritable, Text, DoubleWritable> {
+public class InverseDocFrequencyReducer extends Reducer<Text, TermDocFreqWritable, Text, Text> {
 
-	private final Text docTerm = new Text();
-	private final DoubleWritable tfidf = new DoubleWritable();
+	private final Text tfidf = new Text();
 
 	private int numberOfDocuments = 0;
 
@@ -44,17 +44,28 @@ public class InverseDocFrequencyReducer extends Reducer<Text, TermDocFreqWritabl
 			termDocFreq.add(new TermDocFreqWritable(value));
 		}
 
-		// compute the TF-IDF score for all term-documents
 		final int docFrequency = termDocFreq.size();
-		for (TermDocFreqWritable value : termDocFreq) {
-			docTerm.set(value.toString());
-			tfidf.set(computeTFIDF(value, docFrequency));
-			context.write(docTerm, tfidf);
+		// filter out un-frequent and too-frequent terms
+		if (docFrequency < 3 || docFrequency > numberOfDocuments / 2) {
+			return;
 		}
+
+		// compute the TF-IDF score for all term-documents
+		final StringBuilder tfidfLine = new StringBuilder();
+		for (TermDocFreqWritable value : termDocFreq) {
+			tfidfLine.append(value.getDoc()).append(':');
+			tfidfLine.append(computeTFIDF(value, docFrequency));
+			tfidfLine.append(' ');
+		}
+		tfidfLine.delete(tfidfLine.length() - 1, tfidfLine.length());
+
+		// emit one sparse line of the TF-IDF matrix
+		tfidf.set(tfidfLine.toString());
+		context.write(key, tfidf);
 	}
 
 	/** Computes the TF-IDF score for given term-document-frequency. */
 	protected double computeTFIDF(TermDocFreqWritable termDocFreq, int docFrequency) {
-		return (double) termDocFreq.getFreq() * Math.log((double) numberOfDocuments / docFrequency);
+		return Math.log((double) termDocFreq.getFreq() + 1.0) * Math.log((double) numberOfDocuments / docFrequency);
 	}
 }

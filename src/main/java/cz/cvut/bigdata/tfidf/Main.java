@@ -13,7 +13,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -43,6 +42,8 @@ import java.io.IOException;
  * </ul>
  */
 public class Main extends Configured implements Tool {
+
+	public static final int REDUCER_TASKS = 5;
 
 	public static void main(String[] arguments) throws Exception {
 		System.exit(ToolRunner.run(new Main(), arguments));
@@ -93,6 +94,8 @@ public class Main extends Configured implements Tool {
 	private ControlledJob prepareLineNumberJob(Path input, Path output) throws IOException {
 		final Job job = new Job(conf, "LineNumber");
 
+		job.setNumReduceTasks(REDUCER_TASKS);
+
 		// set MarReduce classes
 		job.setJarByClass(LineNumberMapper.class);
 		job.setMapperClass(LineNumberMapper.class);
@@ -122,6 +125,8 @@ public class Main extends Configured implements Tool {
 	/** Create and setup the TermFrequency job. */
 	private ControlledJob prepareTermFrequencyJob(Path input, Path output) throws IOException {
 		final Job job = new Job(conf, "TermFrequency");
+
+		job.setNumReduceTasks(REDUCER_TASKS);
 
 		// set MarReduce classes
 		job.setJarByClass(TermFrequencyMapper.class);
@@ -153,6 +158,8 @@ public class Main extends Configured implements Tool {
 	private ControlledJob prepareInverseDocFrequencyJob(Path input, Path output) throws IOException {
 		final Job job = new Job(conf, "InverseDocFrequency");
 
+		job.setNumReduceTasks(REDUCER_TASKS);
+
 		// set MarReduce classes
 		job.setJarByClass(InverseDocFrequencyMapper.class);
 		job.setMapperClass(InverseDocFrequencyMapper.class);
@@ -163,7 +170,7 @@ public class Main extends Configured implements Tool {
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(TermDocFreqWritable.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(DoubleWritable.class);
+		job.setOutputValueClass(Text.class);
 
 		// setup input and output
 		FileInputFormat.addInputPath(job, input);
