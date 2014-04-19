@@ -10,7 +10,7 @@ public class HashPartitioner<K extends WritableComparable<? super K>> extends Pa
 
 	@Override
 	public int getPartition(K key, Object value, int numPartitions) {
-		return key.hashCode() % numPartitions;
+		return Math.abs(key.hashCode()) % numPartitions;
 	}
 
 }
